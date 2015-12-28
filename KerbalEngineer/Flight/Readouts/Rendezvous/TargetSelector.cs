@@ -20,7 +20,7 @@
 #region Using Directives
 
 using KerbalEngineer.Flight.Sections;
-
+using KerbalEngineer.Extensions;
 using UnityEngine;
 
 #endregion
@@ -326,13 +326,41 @@ namespace KerbalEngineer.Flight.Readouts.Rendezvous
             GUILayout.EndHorizontal();
         }
 
+
+        private static int CompareByDistance(global::Vessel a, global::Vessel b)
+        {
+            var LT = Vector3d.Distance(FlightGlobals.ActiveVessel.GetWorldPos3D(), a.GetWorldPos3D()) < Vector3d.Distance(FlightGlobals.ActiveVessel.GetWorldPos3D(), b.GetWorldPos3D());
+            var GT = Vector3d.Distance(FlightGlobals.ActiveVessel.GetWorldPos3D(), a.GetWorldPos3D()) > Vector3d.Distance(FlightGlobals.ActiveVessel.GetWorldPos3D(), b.GetWorldPos3D());
+
+            if(!LT && !GT)
+            {
+                return 0; //Same distance
+            }
+            else if (LT)
+            {
+                return -1; //Less than
+            }
+            else
+            {
+                return 1; //Greater than
+            }
+        }
+
         /// <summary>
         ///     Draws targetable vessels.
         /// </summary>
-        private int DrawVessels()
+        private int DrawVessels(bool sortByDistance=true)
         {
+            var myVessels = new System.Collections.Generic.List<global::Vessel>(FlightGlobals.Vessels);
+            if (sortByDistance)
+            {
+                myVessels.Sort(CompareByDistance);
+            }
+
+
+
             var count = 0;
-            foreach (var vessel in FlightGlobals.Vessels)
+            foreach (var vessel in myVessels)
             {
                 if (vessel == FlightGlobals.ActiveVessel || (this.searchQuery.Length == 0 && vessel.vesselType != this.vesselType))
                 {
@@ -349,7 +377,7 @@ namespace KerbalEngineer.Flight.Readouts.Rendezvous
                 {
                     count++;
 
-                    if (GUILayout.Button(vessel.GetName(), this.ButtonStyle, GUILayout.Width(this.ContentWidth)))
+                    if (GUILayout.Button(vessel.GetName() + " (" + DoubleExtensions.ToDistance(Vector3d.Distance(vessel.GetWorldPos3D(),FlightGlobals.ActiveVessel.GetWorldPos3D()))+")" , this.ButtonStyle, GUILayout.Width(this.ContentWidth)))
                     {
                         this.SetTargetAs(vessel);
                     }
