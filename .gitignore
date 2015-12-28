@@ -113,3 +113,6 @@ App_Data/*.ldf
 
 [Gg]ame/
 [Rr]elease/
+[Oo]utput/
+
+KerbalEngineer/KerbalEngineer.csproj
